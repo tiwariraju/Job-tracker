@@ -1,3 +1,9 @@
+## 🚀 Live Demo
+
+Frontend: [https://job-tracker-two-iota.vercel.app](https://job-tracker-two-iota.vercel.app)
+
+Backend API: [https://job-tracker-backend-geie.onrender.com](https://job-tracker-backend-geie.onrender.com)
+
 # Job Tracker
 
 Personal project to keep track of job applications — company name, role, status, and applied date.  
