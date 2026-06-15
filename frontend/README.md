@@ -1,6 +1,6 @@
 # Job Tracker — Frontend
 
-React UI for the Job Tracker project. This talks to the Spring Boot backend running on `http://localhost:8080`.
+React UI for the Job Tracker project. This talks to the Spring Boot backend running on `https://job-tracker-backend-geie.onrender.com`.
 
 ## Stack
 
@@ -31,11 +31,11 @@ Open: http://localhost:5173
 
 ## Config
 
-By default API base is `http://localhost:8080`.  
+By default API base is `https://job-tracker-backend-geie.onrender.com`.  
 To change it, create a `.env` file:
 
 ```env
-VITE_API_BASE=http://localhost:8080
+VITE_API_BASE=https://job-tracker-backend-geie.onrender.com
 ```
 
 ## Main files

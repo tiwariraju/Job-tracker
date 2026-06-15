@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import './App.css'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://job-tracker-backend-geie.onrender.com'
 
 function statusPillClass(status) {
   if (status === 'APPLIED') return 'pill pillApplied'
@@ -116,7 +116,7 @@ function App() {
     <div className="app">
       <div className="header">
         <h1>Job Tracker</h1>
-        <p className="muted">React frontend integrated with Spring Boot REST API</p>
+        <p className="muted">Track your job applications efficiently</p>
       </div>
 
       {stats ? (
@@ -183,7 +183,7 @@ function App() {
       </div>
 
       <div className="toolbar">
-        <strong>Applications ({filteredJobs.length})</strong>
+        <strong>{filteredJobs.length === 0 ? "No applications yet" : `Applications (${filteredJobs.length})`}</strong>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
