@@ -7,12 +7,24 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
 
+/**
+ * JPA/Hibernate entity mapped to the {@code jobs} table.
+ * Indexed columns support efficient queries when managing 100+ job applications.
+ */
 @Entity
-@Table(name = "jobs")
+@Table(
+        name = "jobs",
+        indexes = {
+                @Index(name = "idx_jobs_status", columnList = "status"),
+                @Index(name = "idx_jobs_company_name", columnList = "companyName"),
+                @Index(name = "idx_jobs_applied_date", columnList = "appliedDate")
+        }
+)
 public class Job {
 
     @Id

@@ -1,16 +1,55 @@
-# React + Vite
+# Job Tracker — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React UI for the Job Tracker project. This talks to the Spring Boot backend running on `http://localhost:8080`.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** — UI and state
+- **Vite** — dev server and build tool (faster than CRA)
+- **Axios** — HTTP requests to REST API
+- **Plain CSS** — styling in `App.css` (no Tailwind/MUI)
 
-## React Compiler
+## What this app does
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Shows a form to add job applications
+2. Lists all jobs fetched from `GET /jobs`
+3. Search box calls `GET /jobs/search?keyword=...`
+4. Status dropdown calls `PATCH /jobs/{id}/status`
+5. Delete button calls `DELETE /jobs/{id}`
+6. Top stats bar from `GET /jobs/stats`
 
-## Expanding the ESLint configuration
+## Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Make sure backend is already running on port 8080.
+
+```bash
+npm install
+npm run dev
+```
+
+Open: http://localhost:5173
+
+## Config
+
+By default API base is `http://localhost:8080`.  
+To change it, create a `.env` file:
+
+```env
+VITE_API_BASE=http://localhost:8080
+```
+
+## Main files
+
+| File | Purpose |
+|------|---------|
+| `src/App.jsx` | Main page — form, list, search, API calls |
+| `src/App.css` | Layout and styling |
+| `src/main.jsx` | React entry point |
+
+## Build for production
+
+```bash
+npm run build
+```
+
+Output goes to `dist/` folder.

@@ -13,6 +13,7 @@ function statusPillClass(status) {
 
 function App() {
   const [jobs, setJobs] = useState([])
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -29,12 +30,26 @@ function App() {
 
   const [query, setQuery] = useState('')
 
-  async function loadJobs() {
+  async function loadStats() {
+    try {
+      const res = await axios.get(`${API_BASE}/jobs/stats`)
+      setStats(res.data)
+    } catch {
+      setStats(null)
+    }
+  }
+
+  async function loadJobs(searchKeyword = query) {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.get(`${API_BASE}/jobs`)
+      const trimmed = searchKeyword.trim()
+      const url = trimmed
+        ? `${API_BASE}/jobs/search?keyword=${encodeURIComponent(trimmed)}`
+        : `${API_BASE}/jobs`
+      const res = await axios.get(url)
       setJobs(res.data)
+      await loadStats()
     } catch (e) {
       setError('Failed to load jobs. Is the backend running on :8080?')
     } finally {
@@ -43,18 +58,17 @@ function App() {
   }
 
   useEffect(() => {
-    loadJobs()
+    loadJobs('')
   }, [])
 
-  const filteredJobs = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return jobs
-    return jobs.filter((j) => {
-      return (
-        j.companyName?.toLowerCase().includes(q) || j.role?.toLowerCase().includes(q)
-      )
-    })
-  }, [jobs, query])
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadJobs(query)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  const filteredJobs = useMemo(() => jobs, [jobs])
 
   async function createJob(e) {
     e.preventDefault()
@@ -65,7 +79,7 @@ function App() {
       setCompanyName('')
       setRole('')
       setStatus('APPLIED')
-      await loadJobs()
+      await loadJobs(query)
     } catch (e2) {
       const msg =
         e2?.response?.data?.message ||
@@ -77,14 +91,11 @@ function App() {
   async function updateJobStatus(job, nextStatus) {
     setError('')
     try {
-      const payload = {
-        companyName: job.companyName,
-        role: job.role,
+      const res = await axios.patch(`${API_BASE}/jobs/${job.id}/status`, {
         status: nextStatus,
-        appliedDate: job.appliedDate,
-      }
-      const res = await axios.put(`${API_BASE}/jobs/${job.id}`, payload)
+      })
       setJobs((prev) => prev.map((j) => (j.id === job.id ? res.data : j)))
+      await loadStats()
     } catch (e) {
       setError('Update failed. Please try again.')
     }
@@ -95,6 +106,7 @@ function App() {
     try {
       await axios.delete(`${API_BASE}/jobs/${id}`)
       setJobs((prev) => prev.filter((j) => j.id !== id))
+      await loadStats()
     } catch (e) {
       setError('Delete failed. Please try again.')
     }
@@ -104,8 +116,19 @@ function App() {
     <div className="app">
       <div className="header">
         <h1>Job Tracker</h1>
-        <p className="muted">Spring Boot + MySQL backend, React frontend</p>
+        <p className="muted">React frontend integrated with Spring Boot REST API</p>
       </div>
+
+      {stats ? (
+        <div className="statsBar">
+          <span>
+            <strong>{stats.total}</strong> total applications
+          </span>
+          <span className="muted">Applied: {stats.byStatus?.APPLIED ?? 0}</span>
+          <span className="muted">Interview: {stats.byStatus?.INTERVIEW ?? 0}</span>
+          <span className="muted">Rejected: {stats.byStatus?.REJECTED ?? 0}</span>
+        </div>
+      ) : null}
 
       <div className="card">
         <form onSubmit={createJob}>
@@ -147,7 +170,7 @@ function App() {
             </div>
           </div>
           <div className="actions">
-            <button type="button" className="btn" onClick={loadJobs}>
+            <button type="button" className="btn" onClick={() => loadJobs(query)}>
               Refresh
             </button>
             <button type="submit" className="btn btnPrimary">

@@ -2,6 +2,8 @@ package com.jobtracker.common.error;
 
 import com.jobtracker.jobs.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,6 +16,10 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Centralized REST API error handling via @ControllerAdvice.
+ * Converts validation failures and not-found cases into consistent JSON responses.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -28,6 +34,16 @@ public class GlobalExceptionHandler {
         for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
             // If multiple validations fail for a field, keep the first message (stable, simple UX).
             fieldErrors.putIfAbsent(fe.getField(), fe.getDefaultMessage());
+        }
+        return buildError(HttpStatus.BAD_REQUEST, "Validation failed", req.getRequestURI(), fieldErrors);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest req) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String field = violation.getPropertyPath().toString();
+            fieldErrors.putIfAbsent(field, violation.getMessage());
         }
         return buildError(HttpStatus.BAD_REQUEST, "Validation failed", req.getRequestURI(), fieldErrors);
     }

@@ -1,0 +1,165 @@
+{
+  "info": {
+    "name": "Job Tracker REST API",
+    "description": "Postman collection for unit testing the Job Tracker Spring Boot RESTful APIs (input validation, global exception handling, Hibernate/JPA + MySQL).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "jobId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Job (POST /jobs)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"companyName\": \"Acme Corp\",\n  \"role\": \"Java Developer\",\n  \"status\": \"APPLIED\",\n  \"appliedDate\": \"2026-04-23\"\n}"
+        },
+        "url": "{{baseUrl}}/jobs",
+        "description": "Creates a new job application. Returns 201 Created. Validates required fields via Bean Validation."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get All Jobs (GET /jobs)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs",
+        "description": "Returns all job applications. Supports managing 100+ records via indexed MySQL queries."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Job By ID (GET /jobs/{id})",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/{{jobId}}",
+        "description": "Returns a single job by primary key. Returns 404 when not found (handled by GlobalExceptionHandler)."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Job (PUT /jobs/{id})",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"companyName\": \"Acme Corp\",\n  \"role\": \"Senior Java Developer\",\n  \"status\": \"INTERVIEW\",\n  \"appliedDate\": \"2026-04-23\"\n}"
+        },
+        "url": "{{baseUrl}}/jobs/{{jobId}}",
+        "description": "Full update of all job fields."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Delete Job (DELETE /jobs/{id})",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/{{jobId}}",
+        "description": "Deletes a job application. Returns 204 No Content."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Filter Jobs By Status (GET /jobs/status/{status})",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/status/APPLIED",
+        "description": "Returns jobs filtered by status (APPLIED, INTERVIEW, REJECTED). Uses optimized JPA query with index on status."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Search Jobs (GET /jobs/search?keyword=)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/jobs/search?keyword=java",
+          "host": ["{{baseUrl}}"],
+          "path": ["jobs", "search"],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "java"
+            }
+          ]
+        },
+        "description": "Server-side search by company name or role. Optimized MySQL query via Hibernate/JPA @Query."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Job Application Stats (GET /jobs/stats)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/stats",
+        "description": "Returns total application count and counts grouped by status."
+      },
+      "response": []
+    },
+    {
+      "name": "9. Patch Job Status (PATCH /jobs/{id}/status)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"INTERVIEW\"\n}"
+        },
+        "url": "{{baseUrl}}/jobs/{{jobId}}/status",
+        "description": "Partial update for status only. Validates status via @Valid + Bean Validation."
+      },
+      "response": []
+    },
+    {
+      "name": "10. Validation Error Test (POST /jobs — invalid body)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"companyName\": \"\",\n  \"role\": \"\",\n  \"status\": null,\n  \"appliedDate\": null\n}"
+        },
+        "url": "{{baseUrl}}/jobs",
+        "description": "Negative test: expect 400 Bad Request with fieldErrors from GlobalExceptionHandler."
+      },
+      "response": []
+    }
+  ]
+}
