@@ -13,7 +13,6 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://job-tracker-backend-g
 function statusPillClass(status) {
   if (status === 'APPLIED') return 'pill pillApplied'
   if (status === 'INTERVIEW') return 'pill pillInterview'
-  if (status === 'OFFER') return 'pill pillOffer'
   if (status === 'REJECTED') return 'pill pillRejected'
   return 'pill'
 }
@@ -21,7 +20,6 @@ function statusPillClass(status) {
 function statusIcon(status) {
   if (status === 'APPLIED') return <Clock size={14} />
   if (status === 'INTERVIEW') return <Briefcase size={14} />
-  if (status === 'OFFER') return <CheckCircle size={14} />
   if (status === 'REJECTED') return <XCircle size={14} />
   return <FileText size={14} />
 }
@@ -203,14 +201,6 @@ function App() {
 
             <motion.div className="statCard" variants={itemVariants}>
               <div className="statHeader">
-                Offer
-                <div className="statIcon offer"><CheckCircle2 size={20} /></div>
-              </div>
-              <div className="statValue">{stats.byStatus?.OFFER ?? 0}</div>
-            </motion.div>
-
-            <motion.div className="statCard" variants={itemVariants}>
-              <div className="statHeader">
                 Rejected
                 <div className="statIcon rejected"><XCircle size={20} /></div>
               </div>
@@ -260,7 +250,6 @@ function App() {
                 <select value={status} onChange={(e) => setStatus(e.target.value)}>
                   <option value="APPLIED">APPLIED</option>
                   <option value="INTERVIEW">INTERVIEW</option>
-                  <option value="OFFER">OFFER</option>
                   <option value="REJECTED">REJECTED</option>
                 </select>
               </div>
@@ -346,7 +335,6 @@ function App() {
                       >
                         <option value="APPLIED">APPLIED</option>
                         <option value="INTERVIEW">INTERVIEW</option>
-                        <option value="OFFER">OFFER</option>
                         <option value="REJECTED">REJECTED</option>
                       </select>
                     </div>
