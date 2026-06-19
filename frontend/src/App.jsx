@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Briefcase, Search, Plus, BarChart3, 
+  CheckCircle2, Clock, XCircle, Trash2,
+  RefreshCw, FileText, CheckCircle
+} from 'lucide-react'
 import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://job-tracker-backend-geie.onrender.com'
@@ -7,8 +13,17 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://job-tracker-backend-g
 function statusPillClass(status) {
   if (status === 'APPLIED') return 'pill pillApplied'
   if (status === 'INTERVIEW') return 'pill pillInterview'
+  if (status === 'OFFER') return 'pill pillOffer'
   if (status === 'REJECTED') return 'pill pillRejected'
   return 'pill'
+}
+
+function statusIcon(status) {
+  if (status === 'APPLIED') return <Clock size={14} />
+  if (status === 'INTERVIEW') return <Briefcase size={14} />
+  if (status === 'OFFER') return <CheckCircle size={14} />
+  if (status === 'REJECTED') return <XCircle size={14} />
+  return <FileText size={14} />
 }
 
 function App() {
@@ -112,124 +127,260 @@ function App() {
     }
   }
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  }
+
   return (
     <div className="app">
-      <div className="header">
-        <h1>Job Tracker</h1>
-        <p className="muted">Track your job applications efficiently</p>
-      </div>
-
-      {stats ? (
-        <div className="statsBar">
-          <span>
-            <strong>{stats.total}</strong> total applications
-          </span>
-          <span className="muted">Applied: {stats.byStatus?.APPLIED ?? 0}</span>
-          <span className="muted">Interview: {stats.byStatus?.INTERVIEW ?? 0}</span>
-          <span className="muted">Rejected: {stats.byStatus?.REJECTED ?? 0}</span>
+      {/* Top Navigation */}
+      <nav className="topNav">
+        <div className="logo">
+          <div className="logoIcon">
+            <Briefcase size={28} />
+          </div>
+          JobTracker
         </div>
-      ) : null}
+        <div className="navActions">
+          {/* Optional: Add user avatar or settings here in the future */}
+        </div>
+      </nav>
 
-      <div className="card">
-        <form onSubmit={createJob}>
-          <div className="grid">
-            <div className="field">
-              <label>Company</label>
-              <input
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g. Google"
-                required
-              />
-            </div>
-            <div className="field">
-              <label>Role</label>
-              <input
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g. Backend Engineer"
-                required
-              />
-            </div>
-            <div className="field">
-              <label>Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="APPLIED">APPLIED</option>
-                <option value="INTERVIEW">INTERVIEW</option>
-                <option value="REJECTED">REJECTED</option>
-              </select>
-            </div>
-            <div className="field">
-              <label>Applied Date</label>
-              <input
-                type="date"
-                value={appliedDate}
-                onChange={(e) => setAppliedDate(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <div className="actions">
-            <button type="button" className="btn" onClick={() => loadJobs(query)}>
-              Refresh
-            </button>
-            <button type="submit" className="btn btnPrimary">
-              Add Job
-            </button>
-          </div>
-        </form>
-        {error ? <div className="error">{error}</div> : null}
-        {loading ? <div className="loading">Loading…</div> : null}
-      </div>
+      {/* Main Content */}
+      <main className="mainContent">
+        
+        {/* Header & Stats */}
+        <motion.div 
+          className="pageHeader"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.h1 variants={itemVariants}>Dashboard</motion.h1>
+          <motion.p variants={itemVariants}>Track and manage your job applications efficiently.</motion.p>
+        </motion.div>
 
-      <div className="toolbar">
-        <strong>{filteredJobs.length === 0 ? "No applications yet" : `Applications (${filteredJobs.length})`}</strong>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by company or role…"
-        />
-      </div>
-
-      <div className="list">
-        {filteredJobs.map((job) => (
-          <div className="card" key={job.id}>
-            <div className="row">
-              <div className="colSpan2">
-                <div style={{ fontWeight: 700 }}>
-                  {job.companyName} — {job.role}
-                </div>
-                <div className="muted">Applied: {job.appliedDate}</div>
+        {stats && (
+          <motion.div 
+            className="statsGrid"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <motion.div className="statCard" variants={itemVariants}>
+              <div className="statHeader">
+                Total Applications
+                <div className="statIcon total"><BarChart3 size={20} /></div>
               </div>
+              <div className="statValue">{stats.total}</div>
+            </motion.div>
 
-              <div>
-                <span className={statusPillClass(job.status)}>{job.status}</span>
+            <motion.div className="statCard" variants={itemVariants}>
+              <div className="statHeader">
+                Applied
+                <div className="statIcon applied"><Clock size={20} /></div>
               </div>
+              <div className="statValue">{stats.byStatus?.APPLIED ?? 0}</div>
+            </motion.div>
 
-              <div>
-                <select
-                  value={job.status}
-                  onChange={(e) => updateJobStatus(job, e.target.value)}
-                >
+            <motion.div className="statCard" variants={itemVariants}>
+              <div className="statHeader">
+                Interview
+                <div className="statIcon interview"><Briefcase size={20} /></div>
+              </div>
+              <div className="statValue">{stats.byStatus?.INTERVIEW ?? 0}</div>
+            </motion.div>
+
+            <motion.div className="statCard" variants={itemVariants}>
+              <div className="statHeader">
+                Offer
+                <div className="statIcon offer"><CheckCircle2 size={20} /></div>
+              </div>
+              <div className="statValue">{stats.byStatus?.OFFER ?? 0}</div>
+            </motion.div>
+
+            <motion.div className="statCard" variants={itemVariants}>
+              <div className="statHeader">
+                Rejected
+                <div className="statIcon rejected"><XCircle size={20} /></div>
+              </div>
+              <div className="statValue">{stats.byStatus?.REJECTED ?? 0}</div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Content Grid (Form + List) */}
+        <div className="contentGrid">
+          
+          {/* Add Job Form */}
+          <motion.div 
+            className="formCard"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="formHeader">
+              <h2>New Application</h2>
+              <p>Record a new job opportunity</p>
+            </div>
+
+            <form onSubmit={createJob} className="formBody">
+              <div className="field">
+                <label>Company</label>
+                <input
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="e.g. Google"
+                  required
+                />
+              </div>
+              
+              <div className="field">
+                <label>Role</label>
+                <input
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g. Backend Engineer"
+                  required
+                />
+              </div>
+              
+              <div className="field">
+                <label>Status</label>
+                <select value={status} onChange={(e) => setStatus(e.target.value)}>
                   <option value="APPLIED">APPLIED</option>
                   <option value="INTERVIEW">INTERVIEW</option>
+                  <option value="OFFER">OFFER</option>
                   <option value="REJECTED">REJECTED</option>
                 </select>
               </div>
+              
+              <div className="field">
+                <label>Applied Date</label>
+                <input
+                  type="date"
+                  value={appliedDate}
+                  onChange={(e) => setAppliedDate(e.target.value)}
+                  required
+                />
+              </div>
 
-              <div className="actions" style={{ justifyContent: 'flex-end' }}>
-                <button className="btn" onClick={() => deleteJob(job.id)}>
-                  Delete
-                </button>
+              {error && <div className="error"><XCircle size={16} /> {error}</div>}
+
+              <button type="submit" className="btn btnPrimary">
+                <Plus size={18} />
+                Add Application
+              </button>
+            </form>
+          </motion.div>
+
+          {/* Applications List */}
+          <motion.div 
+            className="applicationsSection"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="sectionHeader">
+              <h2>
+                <FileText size={20} className="logoIcon" />
+                Applications
+                <span className="badge">{filteredJobs.length}</span>
+              </h2>
+
+              <div className="searchBox">
+                <Search size={18} className="searchIcon" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by company or role…"
+                />
               </div>
             </div>
-          </div>
-        ))}
 
-        {!loading && filteredJobs.length === 0 ? (
-          <div className="muted">No jobs yet. Add your first application above.</div>
-        ) : null}
-      </div>
+            <div className="list">
+              <AnimatePresence>
+                {filteredJobs.map((job) => (
+                  <motion.div 
+                    className="jobCard" 
+                    key={job.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="jobInfo">
+                      <div className="jobTitle">
+                        <span className="companyName">{job.companyName}</span>
+                        <span className="muted">—</span>
+                        {job.role}
+                      </div>
+                      <div className="appliedDate">
+                        <Clock size={12} />
+                        Applied: {job.appliedDate}
+                      </div>
+                    </div>
+
+                    <div className="statusWrapper">
+                      <span className={statusPillClass(job.status)}>
+                        {statusIcon(job.status)}
+                        {job.status}
+                      </span>
+                    </div>
+
+                    <div className="actionWrapper">
+                      <select
+                        value={job.status}
+                        onChange={(e) => updateJobStatus(job, e.target.value)}
+                      >
+                        <option value="APPLIED">APPLIED</option>
+                        <option value="INTERVIEW">INTERVIEW</option>
+                        <option value="OFFER">OFFER</option>
+                        <option value="REJECTED">REJECTED</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <button className="btnDelete" onClick={() => deleteJob(job.id)} title="Delete Application">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {!loading && filteredJobs.length === 0 && (
+                <motion.div 
+                  className="emptyState"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <FileText size={48} className="emptyIcon" />
+                  <p>No applications found. Add your first application to start tracking.</p>
+                </motion.div>
+              )}
+
+              {loading && (
+                <div className="loading">
+                  <RefreshCw size={24} className="spin" />
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+        </div>
+      </main>
     </div>
   )
 }
